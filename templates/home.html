@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title>Travel Planner</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <style>
+      #banner{
+        width: 100%;
+        height: 500px;
+        object-fit: cover;
+        display: block;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center page-header">Welcome to Travel Planner</h1>
+      <h3 class="text-center">created by Kyrylo Vorobiov</h3>
+      <img id="banner" src={{ url_for("static", filename="images/travelling.jpg") }} alt="">
+
+      <h2 class="text-center">About Travel Planner</h2>
+      <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.</p>
+
+      <button class="btn btn-primary btn-lg btn-block">Go to my Trips</button>
+    </div>
+  </body>
+</html>
