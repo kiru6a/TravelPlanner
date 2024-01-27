@@ -1,7 +1,11 @@
 from sqlalchemy import create_engine, text
+import configparser
 
 
-dbConnectionString = "mysql+pymysql://avnadmin:AVNS_UX4e4F-e4ljxYcWQOcG@travel-planner-travel-planner.a.aivencloud.com:10904/travel_planner?charset=utf8mb4"
+config = configparser.ConfigParser()
+config.read("config.properties")
+
+dbConnectionString = config.get("DEFAULT", "DB_CONNECTION_STRING")
 
 engine = create_engine(dbConnectionString)
 
