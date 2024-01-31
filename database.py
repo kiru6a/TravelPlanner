@@ -55,4 +55,12 @@ def fetchUserByUsername(username: str):
                 "WHERE username = :username")
     result = conn.execute(stmt, {"username": username})
     return result.fetchone()
+
+def fetchUserById(userId: int):
+  with engine.connect() as conn:
+    stmt = text("SELECT user_id, username, password "\
+               "FROM planner_user "\
+                "WHERE user_id = :userId")
+    result = conn.execute(stmt, {"userId": userId})
+    return result.fetchone()
   
