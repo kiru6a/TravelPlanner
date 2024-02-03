@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Travel Planner</title>
+    <meta charset="utf-8">
+    {% include 'bootstrap.html' %}
+    <style>
+      .flash-messages {
+          position: fixed;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: #f8d7da;
+          color: white;
+          padding: 10px;
+          border-radius: 5px;
+          display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center page-header">Welcome to Travel Planner</h1>
+      <h3 class="text-center">created by Kyrylo Vorobiov</h3>
+  
+      {% include 'banner.html' %}
+  
+      <h2 class="text-center pb-2">Your Trips</h2>
+      <br>
+  
+        {% if not trips[0] is defined %}
+          <h3 class="text-center">You have no trips yet.</h3>
+        {% else %}
+          {% for trip in trips %}
+            <a href="/trip/{{ trip.trip_id }}">
+              <div class="row border row-cols-3">
+                <div class="col d-flex  
+                  align-items-center  
+                  justify-content-center"><p class="lead text-center ">-><b>{{ trip['city_name'] }}</b></p></div>
+
+                {% set datetime = trip['date_to'] %}
+                {% set month_name = datetime.strftime('%b') %}
+                {% set day = datetime.strftime('%d') %}
+                {% set year = datetime.strftime('%Y') %}
+                <div class="col row row-cols-1">
+                  <div class="col d-flex  
+                    align-items-center  
+                    justify-content-center">
+                    <p class="lead text-center">from <b>{{ day }} {{ month_name }}/{{ year }}</b></p>
+                  </div>
+
+                  
+                {% set datetime = trip['date_from'] %}
+                {% set month_name = datetime.strftime('%b') %}
+                {% set day = datetime.strftime('%d') %}
+                {% set year = datetime.strftime('%Y') %}
+                <div class="col d-flex  
+                align-items-center  
+                justify-content-center">
+                  <p class="lead text-center">to <b>{{ day }} {{ month_name }}/{{ year }}</b></p>
+                </div>
+                </div>
+                <div class="col">
+                  <img src="{{ trip['city_image_url'] }}" class="img-flud" style="max-width: 100%; height: auto;">
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+      {% endif %}
+        <div class="d-flex  
+          align-items-center  
+          justify-content-center pt-3">
+          <button class="btn btn-lg btn-primary">Add a new Trip</button>
+        </div>
+    </div>
+  
+  </body>
+</html>

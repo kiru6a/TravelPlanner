@@ -63,4 +63,13 @@ def fetchUserById(userId: int):
                 "WHERE user_id = :userId")
     result = conn.execute(stmt, {"userId": userId})
     return result.fetchone()
-  
+
+def fetchTripsDataByUserId(userId: int):
+  with engine.connect() as conn:
+    stmt = text("SELECT t.trip_id, t.date_from, "\
+              "t.date_to, c.city_name, c.city_image_url "\
+              "FROM trips t JOIN city c ON t.city_id = c.city_id "\
+              "WHERE t.user_id = :userId")
+    result = conn.execute(stmt, {"userId": userId})
+    return result.all()
+    
