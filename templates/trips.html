@@ -5,18 +5,32 @@
     <meta charset="utf-8">
     {% include 'bootstrap.html' %}
     <style>
-      .flash-messages {
-          position: fixed;
-          bottom: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          background-color: #f8d7da;
-          color: white;
-          padding: 10px;
-          border-radius: 5px;
-          display: none;
+      .popupContainer{
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
       }
-    </style>
+      .popupContent{
+        background-color: white;
+        width: 100%;
+        heigh: 300px;
+        max-height: 100%;
+        padding: 20px;
+        border-radius: 10px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #predictionsList{
+        cursor: pointer;
+      }
+      </style>
   </head>
   <body>
     <div class="container">
@@ -61,18 +75,162 @@
                 </div>
                 </div>
                 <div class="col">
-                  <img src="{{ trip['city_image_url'] }}" class="img-flud" style="max-width: 100%; height: auto;">
+                  <img src="{{ trip['city_image_url'] }}" alt="no_image" class="img-fluid" style="max-width: 100%; height: auto;">
                 </div>
               </div>
             </a>
           {% endfor %}
       {% endif %}
+      
         <div class="d-flex  
           align-items-center  
           justify-content-center pt-3">
-          <button class="btn btn-lg btn-primary">Add a new Trip</button>
+          <button id="addTripBtn" class="btn btn-lg btn-primary" onclick="openPopup()">Add a new Trip</button>
         </div>
-    </div>
+    
+        <div id="popupContainer" class="popupContainer">
+          <div id="popupContent" class="popupContent">
+            <h2 class="text-center">Add a new trip</h2>
+
+            <div class="row">
+              <div class="col-6">
+                <input id="citySearch" type="text" placeholder="Enter a city name">
+                <button class="btn btn-primary" onclick = "getPredictions()">Search for the city</button>
+                <a>
+                <ul id="predictionsList" onclick="chooseCity(event)"></ul>
+                 </a>
+                
+                  <p id="chosenCityParagraph" style="display: none;">Chosen city: <span id="chosenCityName"></span></p>
+                </div>
+
+              <div class="col-6">
+                
+                <p class="lead text-center">Choose the dates of the trip</p>
+                <div class="row">
+                  <div class="col-6">
+                    <p class="lead text-center">Date From:</p>
+                    <div class="d-flex  
+                      align-items-center  
+                      justify-content-center pt-3">
+                      <input type="date" id="dateFromInput" required oninput="showDateToDiv()">
+                    </div>
+                  </div>
+
+                
+                  <div class="col-6" id="dateToDiv" style="display: none;">
+                    <p class="lead text-center">Date To:</p>
+                    <div class="d-flex  
+                    align-items-center  
+                    justify-content-center pt-3">
+                      <input type="date" id="dateToInput" required>
+                    </div>
+                  </div>
+                  
+                </div>
+                
+              </div>
+              
+            </div>
+
+            <div class="d-flex  
+              align-items-center  
+              justify-content-center pt-3">
+              <button class="btn btn-lg btn-outline-secondary" onclick = "closePopup()">Close</button>
+              <button class="btn btn-lg btn-primary" onclick="redirectToCreation()">Create</button>
+            </div>
+          </div>
+        </div>
+          </div>
+
+    <script>
+      function openPopup() {
+        document.getElementById("popupContainer").style.display = "block";
+      }
+      function closePopup(){
+        document.getElementById("popupContainer").style.display = "none";
+      }
+
+      function showDateToDiv(){
+        const dateToDiv = document.getElementById("dateToDiv");
+        const dateToInput = document.getElementById("dateToInput");
+        const dateFromInput = document.getElementById("dateFromInput");
   
+        
+        dateToInput.min = dateFromInput.value;
+        dateToInput.value = dateFromInput.value;
+        dateToDiv.style.display = "block";
+      }
+
+      function chooseCity(event){
+        const chosenCityParagraph = document.getElementById("chosenCityParagraph");
+        const chosenCityName = document.getElementById("chosenCityName");
+        
+        if (event.target.tagName === 'LI') {
+          const chosenCity = event.target.textContent;
+          chosenCityName.textContent = chosenCity;
+          
+          chosenCityParagraph.style.display = "block";
+        
+
+          document.getElementById("predictionsList").innerHTML = "";
+        }
+      }
+
+      function getPredictions(){
+        const searchQuery = document.getElementById("citySearch").value;
+        fetch("/get_city_predictions", {
+          method: "POST",
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `searchQuery=${searchQuery}`
+
+        })
+        .then(response => response.json())
+        .then(data => {
+          const predictionsList = document.getElementById("predictionsList");
+          predictionsList.innerHTML = '';
+
+          predictionsList.append(document.createElement("br"));
+          
+          if (data.predictions.length != 0){
+            
+            const p = document.createElement("p");
+            p.textContent = "Click a city name to choose it";
+            predictionsList.append(p);
+            
+            data.predictions.forEach(prediction =>{
+                const li = document.createElement("li");
+                li.textContent = prediction;
+                predictionsList.appendChild(li);
+              })
+          }
+          else{
+            const p = document.createElement("p");
+            p.textContent = "No cities with such name were found";
+            predictionsList.append(p);
+          }
+        })
+        .catch(error => console.error("Error: ", error))
+      }
+
+      function redirectToCreation(){
+        const chosenCityName = document.getElementById("chosenCityName").textContent;
+        const dateFromInput = document.getElementById("dateFromInput").value;
+        const dateToInput = document.getElementById("dateToInput").value;
+
+        if (chosenCityName !== "" && dateFromInput !== "" && dateToInput !== ""){
+          const url = `/create-trip?city=${chosenCityName}&dateFrom=${dateFromInput}&dateTo=${dateToInput}`;
+
+          window.location.href = url;
+        }
+        else{
+          alert("Please fill in all required fields before creating a trip.");
+        }
+      }
+      
+      document.getElementById("addTripBtn").addEventListener("click", openPopup);
+      document.getElementById("dateFromInput").min = new Date().toISOString().split("T")[0];
+    </script>
   </body>
 </html>

@@ -2,7 +2,7 @@ import requests
 import os
 
 
-def unsplashApiCitySearch(query: str, maxHeight=None):
+def findCityImage(query: str, maxHeight=3500):
   if query is None:
     return None
     
@@ -29,5 +29,3 @@ def unsplashApiCitySearch(query: str, maxHeight=None):
     
   except requests.exceptions.RequestException:
     return None
-
-print(unsplashApiCitySearch("Bi", 3500))

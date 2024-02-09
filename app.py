@@ -1,7 +1,8 @@
-from flask import Flask, render_template, flash, redirect, url_for
-from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername, fetchUserById, fetchTripsDataByUserId
+from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
+from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername, fetchUserById, fetchTripsDataByUserId, insertTripIntoDb
 from flask_bcrypt import check_password_hash, bcrypt
 from flask_login import UserMixin, login_user, logout_user, LoginManager, login_required, current_user
+from places_api import getCityPredictions
 
 
 app = Flask(__name__)
@@ -109,6 +110,22 @@ def unauthorized():
 def trip(tripId):
   return "TODO"
 
+
+@app.route("/get_city_predictions", methods=["POST"])
+def getPredictions():
+  searchQuery = request.form.get("searchQuery")
+  predictions = getCityPredictions(searchQuery=searchQuery)
+
+  return jsonify({"predictions": predictions})
+
+@app.route("/create-trip")
+def createTrip():
+  cityName = str(request.args.get("city")).split(",")[0]
+  dateFrom = str(request.args.get("dateFrom"))
+  dateTo = str(request.args.get("dateTo"))
+
+  insertTripIntoDb(userId=current_user.id, cityName=cityName, dateFrom=dateFrom, dateTo=dateTo)
+  return redirect(url_for("tripsForUser", userId=current_user.id))
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', debug=True)
