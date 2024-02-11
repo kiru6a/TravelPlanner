@@ -33,9 +33,11 @@
       </style>
   </head>
   <body>
+    {% include 'header_authenticated.html' %}
     <div class="container">
-      <h1 class="text-center page-header">Welcome to Travel Planner</h1>
+      <h1 class="text-center page-header">Travel Planner</h1>
       <h3 class="text-center">created by Kyrylo Vorobiov</h3>
+      <h5 class="text-center pb-3">scroll down to see your trips</h5>
   
       {% include 'banner.html' %}
   
@@ -138,9 +140,11 @@
               <button class="btn btn-lg btn-outline-secondary" onclick = "closePopup()">Close</button>
               <button class="btn btn-lg btn-primary" onclick="redirectToCreation()">Create</button>
             </div>
+            
           </div>
         </div>
-          </div>
+      {% include 'footer.html' %}
+      </div>
 
     <script>
       function openPopup() {
@@ -195,9 +199,9 @@
           
           if (data.predictions.length != 0){
             
-            const p = document.createElement("p");
-            p.textContent = "Click a city name to choose it";
-            predictionsList.append(p);
+            const h6 = document.createElement("h6");
+            h6.textContent = "Click a city name to choose it";
+            predictionsList.append(h6);
             
             data.predictions.forEach(prediction =>{
                 const li = document.createElement("li");

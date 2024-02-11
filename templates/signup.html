@@ -21,7 +21,6 @@
       <div class="col-md-4 col-md-offset-4 text-center" style="margin-top: 50vh; transform: translateY(-50%);">
         <h1 style="color: white;">Signup Page</h1>
         <form method="POST" action="{{ url_for('signup') }}">
-          <h3 style="color: white;">Uh oh, you've got to sign up first!</h3>
           <h5 style="color: white;">Already have an account? <a href="{{ url_for('login') }}">Log in</a></h5>
           {{ form.hidden_tag() }}
           {{ form.username }}

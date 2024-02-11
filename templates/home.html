@@ -7,19 +7,26 @@
     </style>
   </head>
   <body>
-    <div class="container">
+    {% if isAuthenticated %}
+      {% include 'header_authenticated.html' %}
+    {% else %}
+      {% include 'header_unauthenticated.html' %}
+    {% endif %}
+    <div class="container pt-0.3">
       <h1 class="text-center page-header">Welcome to Travel Planner</h1>
-      <h3 class="text-center">created by Kyrylo Vorobiov</h3>
+      <h3 class="text-center pb-3">created by Kyrylo Vorobiov</h3>
       {% include 'banner.html' %}
 
       <h2 class="text-center">About Travel Planner</h2>
-      <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.</p>
+      <p class="lead pb-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.Lorem ipsum dolor sit amet, consectetur adipisicing elit. Placeat et, rem officiis error, eaque eveniet modi laudantium praesentium aperiam aliquid delectus corporis culpa ipsam id, veritatis ex? Delectus, aliquid ipsam.</p>
 
       <div class="text-center d-grid gap-2">
-       <a href="/signup" class="btn btn-primary btn-lg btn-block" type="button">Go to your Trips</a>
+       <a href="/login" class="btn btn-primary btn-lg btn-block" type="button">Go to your Trips</a>
   
         <a href="mailto:vorobiovkyrylodm@gmail.com?subject=Travel%20Planner" class="btn btn-default btn-lg btn-block btn-light">Contact the Author</a>
         </div>
     </div>
+
+    {% include 'footer.html' %}
   </body>
 </html>

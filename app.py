@@ -11,10 +11,8 @@ login_manager = LoginManager(app)
 
 @app.route("/")
 def home():
-  if current_user.is_authenticated:
-    logout_user()
-    flash("You have been logged out", "info")
-  return render_template("home.html")
+  isAuthenticated = current_user.is_authenticated
+  return render_template("home.html", isAuthenticated=isAuthenticated)
 
 
 @app.route("/trips")
@@ -64,8 +62,7 @@ def tripsForUser(userId):
 @app.route("/login", methods=["GET", "POST"])
 def login():
   if current_user.is_authenticated:
-    logout_user()
-    flash("You have been logged out", "info")
+    return redirect(url_for("tripsForUser", userId=current_user.id))
   form = LoginForm()
   if form.validate_on_submit():
     userRecord = fetchUserByUsername(form.username.data)
@@ -98,7 +95,7 @@ def loadUser(userId):
 def logout():
   logout_user()
   flash("You have been logged out", "info")
-  return redirect(url_for("login"))
+  return redirect(url_for("home"))
 
 
 @login_manager.unauthorized_handler
