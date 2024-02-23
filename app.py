@@ -1,8 +1,10 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
-from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername, fetchUserById, fetchTripsDataByUserId, insertTripIntoDb
+from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername,\
+fetchUserById, fetchTripsDataByUserId, insertTripIntoDb, fetchTripAndCityDataByTripId, fetchAirportsByCityId
 from flask_bcrypt import check_password_hash, bcrypt
 from flask_login import UserMixin, login_user, logout_user, LoginManager, login_required, current_user
-from places_api import getCityPredictions
+from places_api import getCityPredictions, getCitySights
+from kiwi_api import searchForTrips
 
 
 app = Flask(__name__)
@@ -51,8 +53,9 @@ def tripsForUser(userId):
     tempDict["trip_id"] = trip.trip_id
     tempDict["date_from"] = trip.date_from
     tempDict["date_to"] = trip.date_to
-    tempDict["city_name"] = trip.city_name
-    tempDict["city_image_url"] = trip.city_image_url
+    tempDict["city_from_name"] = trip.from_name
+    tempDict["city_to_name"] = trip.to_name
+    tempDict["city_to_image"] = trip.city_to_image
     
     tripsListOfDicts.append(tempDict)
     
@@ -105,7 +108,25 @@ def unauthorized():
 
 @app.route("/trip/<int:tripId>")
 def trip(tripId):
-  return "TODO"
+  dataRow = fetchTripAndCityDataByTripId(tripId)
+  dataDict = {}
+  dataDict["date_from"] = dataRow.date_from
+  dataDict["date_to"] = dataRow.date_to
+  dataDict["from_name"] = dataRow.from_name
+  dataDict["to_name"] = dataRow.to_name
+  dataDict["to_image"] = dataRow.to_image
+
+  sights = getCitySights(dataDict["to_name"])
+
+  fromAirports = fetchAirportsByCityId(dataRow.from_id)
+  fromAirports = [{"code": airport[0], "name": airport[1]} for airport in fromAirports]
+
+  toAirports = fetchAirportsByCityId(dataRow.to_id)
+  toAirports = [{"code": airport[0], "name": airport[1]} for airport in toAirports]
+
+  return render_template("trip-details.html", trip_data=dataDict, \
+                         sights=sights, fromAirports=fromAirports, \
+                         toAirports=toAirports)
 
 
 @app.route("/get_city_predictions", methods=["POST"])
@@ -117,12 +138,27 @@ def getPredictions():
 
 @app.route("/create-trip")
 def createTrip():
-  cityName = str(request.args.get("city")).split(",")[0]
+  departureCity = str(request.args.get("departureCity")).split(",")[0]
+  destinationCity = str(request.args.get("destinationCity")).split(",")[0]
   dateFrom = str(request.args.get("dateFrom"))
   dateTo = str(request.args.get("dateTo"))
 
-  insertTripIntoDb(userId=current_user.id, cityName=cityName, dateFrom=dateFrom, dateTo=dateTo)
+  insertTripIntoDb(userId=current_user.id, departureCity=departureCity,\
+                   destinationCity=destinationCity, dateFrom=dateFrom, dateTo=dateTo)
   return redirect(url_for("tripsForUser", userId=current_user.id))
+
+@app.route("/find_plane_tickets", methods=["POST"])
+def findPlaneTickets():
+  requestData = request.get_json()
+  
+  cityFrom = requestData["cityFrom"]
+  cityTo = requestData["cityTo"]
+  dateFrom = requestData["dateFrom"]
+  dateTo = requestData["dateTo"]
+  curr = requestData["curr"]
+  
+  tickets = searchForTrips(cityFrom, cityTo, dateFrom, dateTo, curr)
+  return jsonify(tickets)
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', debug=True)

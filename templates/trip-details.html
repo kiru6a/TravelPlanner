@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta charset="utf-8">
+    {% include 'bootstrap.html' %}
+  </head>
+
+  <body>
+    <div id="datetimeFrom" data-datetime="{{ trip_data['date_from'] }}"></div>
+    <div id="datetimeTo" data-datetime="{{ trip_data['date_to'] }}"></div>
+    <div class="container">
+      {% include 'header_authenticated.html' %}
+
+      <h3 class="text-center page-header pb-3">{{ trip_data['from_name'] }} ⇄ {{ trip_data['to_name'] }}</h3>
+      <img src="{{ trip_data['to_image'] }}" alt="city image" class="img-fluid pb-4" style="width: 100%; height: 500px; object-fit: cover;">
+      <div class="row pt-3">
+        <div class="col-6 border-end">
+          <h4 class="text-center pb-3">Main city attractions</h4>
+          <ul>
+            {% for sight in sights %}
+                <li class="border-bottom pt-3">
+                    <h5>{{ sight['name'] }}</h5>
+                    <p>{{ sight['address'] }}</p>
+                    <p><a href="{{ sight['mapsLink'] }}" target="_blank">{{ sight['mapsLink'] }}</a></p>
+                  </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="col-6">
+          <h4 class="text-center pb-3">Plane Tickets</h4>
+          <div id="departureTickets" class="container pb-3">
+            <h5 id="departAirportHeader" class="text-center pb-3"><b>Choose the airport you are flying from:</b></h5>
+            <ul id="departureTicketsList" style="cursor: pointer;">
+              {% for airport in fromAirports %}
+                <li class="border-bottom pt-3" onclick="chooseAirport('depart', '{{ airport['name'] }}', '{{ airport['code'] }}')">
+                  <p class="lead">{{ airport['name'] }} ({{ airport['code'] }})</p>
+                </li>
+              {% endfor %}
+            </ul>
+            <h5 id="departureAirportPar" style="display: none;">Flying From: <b><span id="departureAirportNameSpan"></span> (<span id="departureAirportCodeSpan"></span>)</b></h5>
+          </div>
+
+          <div id="destinationTickets" class="container" style="display: none;">
+            <h5 id="destAirportHeader" class="text-center lead"><b>Choose the airport you are flying to:</b></h5>
+            <ul id="destinationTicketsList" style="cursor: pointer;">
+              {% for airport in toAirports %}
+                <li class="border-bottom pt-3" onclick="chooseAirport('dest','{{ airport['name'] }}', '{{ airport['code'] }}')">
+                  <p class="lead">{{ airport['name'] }} ({{ airport['code'] }})</p>
+                </li>
+              {% endfor %}
+            </ul>
+            <h5 id="destinationAirportPar" style="display: none;">Destination Airport: <b><span id="destinationAirportNameSpan"></span> (<span id="destinationAirportCodeSpan"></span>)</b></h5>
+          </div>
+
+          <div class="container pt-3" id="ticketsContainer" style="display: none;">
+            <ul id="ticketsList">
+            </ul>
+          </div>
+        </div>
+        
+      </div>
+      {% include 'footer.html' %}
+    </div>
+
+    <script>
+      function chooseAirport(eventId, airportName, airportCode) {
+        let ticketsList;
+        let airportPar;
+        let airportNameSpan;
+        let chooseAirportHeader;
+        
+        if (eventId === "depart"){
+          ticketsList = document.getElementById("departureTicketsList");
+          airportPar = document.getElementById("departureAirportPar");
+          airportNameSpan = document.getElementById("departureAirportNameSpan");
+           airportCodeSpan = document.getElementById("departureAirportCodeSpan");
+          document.getElementById("destinationTickets").style.display = "block";
+          chooseAirportHeader = document.getElementById("departAirportHeader");
+        }
+        else {
+          ticketsList = document.getElementById("destinationTicketsList");
+          airportPar = document.getElementById("destinationAirportPar");
+          airportNameSpan = document.getElementById("destinationAirportNameSpan");
+           airportCodeSpan = document.getElementById("destinationAirportCodeSpan");
+          chooseAirportHeader = document.getElementById("destAirportHeader");
+        }
+        console.log({{ trip_data['date_from'] }});
+        airportNameSpan.textContent = airportName;
+        airportCodeSpan.textContent = airportCode;
+        ticketsList.style.display = "none";
+        airportPar.style.display = "block";
+        chooseAirportHeader.style.display = "none";
+
+        if (eventId === "dest") {
+          fetchTickets();
+        }
+      }
+
+      function formatDate(date) {
+          // Pad the month and day with leading zeros
+          var formattedMonth = ('0' + (date.getMonth() + 1)).slice(-2);
+          var formattedDay = ('0' + date.getDate()).slice(-2);
+
+          // Get the year in yyyy format
+          var formattedYear = date.getFullYear();
+
+          // Construct the formatted date string
+          var formattedDate = formattedDay + '/' + formattedMonth + '/' + formattedYear;
+
+          return formattedDate;
+      }
+      
+      function fetchTickets() {
+        const airportFrom = document.getElementById("departureAirportCodeSpan").textContent;
+        const airportTo = document.getElementById("destinationAirportCodeSpan").textContent;
+        const dateFrom = formatDate(new Date(document.getElementById('datetimeFrom').getAttribute('data-datetime')));
+        const dateTo = formatDate(new Date(document.getElementById('datetimeTo').getAttribute('data-datetime')));
+
+        fetch("/find_plane_tickets", {
+          method: "POST",
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              cityFrom: airportFrom,
+              dateFrom: dateFrom,
+              dateTo: dateTo,
+              cityTo: airportTo,
+              curr: 'USD'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayTickets(data);
+        })
+        .catch(error => console.error('Error:', error));
+      }
+
+      function displayTickets(data) {
+        const ticketsList = document.getElementById("ticketsList");
+
+        ticketsList.innerHTML = "";
+
+        if (data.length > 0) {
+          data.forEach(ticket => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                  <div class="border-">
+                      <p><strong>From:</strong> ${ticket.cityFrom}</p>
+                      <p><strong>To:</strong> ${ticket.cityTo}</p>
+                      <p><strong>Airport From:</strong> ${ticket.airportFrom}</p>
+                      <p><strong>Airport To:</strong> ${ticket.airportTo}</p>
+                      <p><strong>Price:</strong> ${ticket.price}</p>
+                      <p><strong>Departure:</strong> ${ticket.local_departure}</p>
+                      <p><strong>Arrival:</strong> ${ticket.local_arrival}</p>
+                      <p><strong>Booking Link:</strong> <a href="${ticket.bookingLink}" target="_blank">Book Now</a></p>
+                  </div>
+              `;
+            ticketsList.appendChild(li);
+          });
+        }
+        document.getElementById("ticketsContainer").style.display = "block";
+      }
+    </script>
+    
+  </body>
+</html>

@@ -27,7 +27,10 @@
         left: 50%;
         transform: translate(-50%, -50%);
       }
-      #predictionsList{
+      #destinationPredictionsList{
+        cursor: pointer;
+      }
+      #departurePredictionsList{
         cursor: pointer;
       }
       </style>
@@ -45,14 +48,14 @@
       <br>
   
         {% if not trips[0] is defined %}
-          <h3 class="text-center">You have no trips yet.</h3>
+          <h5 class="text-center">You have no trips yet.</h5>
         {% else %}
           {% for trip in trips %}
             <a href="/trip/{{ trip.trip_id }}">
               <div class="row border row-cols-3">
                 <div class="col d-flex  
                   align-items-center  
-                  justify-content-center"><p class="lead text-center ">-><b>{{ trip['city_name'] }}</b></p></div>
+                  justify-content-center"><p class="lead text-center"><b>{{ trip['city_from_name'] }} ⇄ {{ trip['city_to_name'] }}</b></p></div>
 
                 {% set datetime = trip['date_to'] %}
                 {% set month_name = datetime.strftime('%b') %}
@@ -77,7 +80,7 @@
                 </div>
                 </div>
                 <div class="col">
-                  <img src="{{ trip['city_image_url'] }}" alt="no_image" class="img-fluid" style="max-width: 100%; height: auto;">
+                  <img src="{{ trip['city_to_image'] }}" alt="no_image" class="img-fluid" style="max-width: 100%; height: auto;">
                 </div>
               </div>
             </a>
@@ -95,17 +98,31 @@
             <h2 class="text-center">Add a new trip</h2>
 
             <div class="row">
-              <div class="col-6">
-                <input id="citySearch" type="text" placeholder="Enter a city name">
-                <button class="btn btn-primary" onclick = "getPredictions()">Search for the city</button>
-                <a>
-                <ul id="predictionsList" onclick="chooseCity(event)"></ul>
-                 </a>
-                
-                  <p id="chosenCityParagraph" style="display: none;">Chosen city: <span id="chosenCityName"></span></p>
+              <div class="col-8">
+                <div class="pb-2 border-bottom text-center">
+                  <p class="text-center lead pb-2">Choose the departure city</p>
+                  <input id="citySearchDeparture" type="text" placeholder="Enter the departure city name" style="width: 30%;">
+                  <button id="searchDepartureButton" class="btn btn-primary" onclick = "getPredictions(event)">Search for the departure city</button>
+                  <p id="departureCityParagraph" style="display: none;">Chosen departure city: <b><span id="departureCityName"></span></b></p>
+
+                  <a>
+                    <ul id="departurePredictionsList" onclick="chooseCity(event, 'departurePredictionsList')"></ul>
+                     </a>
+                </div>
+                <br>
+                <div class="pb-2 border-bottom text-center">
+                  <p class="text-center lead pb-2">Choose the destination city</p>
+                  <input id="citySearchDestination" type="text" placeholder="Enter the destination city name" style="width: 30%;">
+                  <button id="searchDestinationButton" class="btn btn-primary" onclick = "getPredictions(event)">Search for the destination city</button>
+
+                  <p id="destinationCityParagraph" style="display: none;">Chosen destination city: <b><span id="destinationCityName"></span></b></p>
+                  <a>
+                    <ul id="destinationPredictionsList" onclick="chooseCity(event, 'destinationPredictionsList')"></ul>
+                  </a>
+                </div>
                 </div>
 
-              <div class="col-6">
+              <div class="col-4">
                 
                 <p class="lead text-center">Choose the dates of the trip</p>
                 <div class="row">
@@ -165,9 +182,20 @@
         dateToDiv.style.display = "block";
       }
 
-      function chooseCity(event){
-        const chosenCityParagraph = document.getElementById("chosenCityParagraph");
-        const chosenCityName = document.getElementById("chosenCityName");
+      function chooseCity(event, eventId){
+        let choseCityParagraph;
+        let chosenCityName;
+        
+        if (eventId === "departurePredictionsList"){
+          chosenCityParagraph = document.getElementById("departureCityParagraph");
+          
+          chosenCityName = document.getElementById("departureCityName");
+        }
+        else{
+          chosenCityParagraph = document.getElementById("destinationCityParagraph");
+
+          chosenCityName = document.getElementById("destinationCityName");
+        }
         
         if (event.target.tagName === 'LI') {
           const chosenCity = event.target.textContent;
@@ -175,13 +203,27 @@
           
           chosenCityParagraph.style.display = "block";
         
-
-          document.getElementById("predictionsList").innerHTML = "";
+          if (eventId === "departurePredictionsList"){
+            document.getElementById("departurePredictionsList").innerHTML = "";
+          }
+          else{
+            document.getElementById("destinationPredictionsList").innerHTML = "";
+          }
         }
       }
 
-      function getPredictions(){
-        const searchQuery = document.getElementById("citySearch").value;
+      function getPredictions(event){
+        const eventId = event.target.id;
+        let predictionsList;
+        let searchQuery;
+        
+        if (eventId === "searchDepartureButton"){
+          searchQuery = document.getElementById("citySearchDeparture").value;
+        }
+        else{
+          searchQuery = document.getElementById("citySearchDestination").value;
+        }
+        
         fetch("/get_city_predictions", {
           method: "POST",
           headers: {
@@ -192,7 +234,12 @@
         })
         .then(response => response.json())
         .then(data => {
-          const predictionsList = document.getElementById("predictionsList");
+          if (eventId === "searchDepartureButton"){
+            predictionsList = document.getElementById("departurePredictionsList");
+          }
+          else{
+            predictionsList = document.getElementById("destinationPredictionsList");
+          }
           predictionsList.innerHTML = '';
 
           predictionsList.append(document.createElement("br"));
@@ -219,12 +266,13 @@
       }
 
       function redirectToCreation(){
-        const chosenCityName = document.getElementById("chosenCityName").textContent;
+        const departureCityName = document.getElementById("departureCityName").textContent;
+        const destinationCityName = document.getElementById("destinationCityName").textContent;
         const dateFromInput = document.getElementById("dateFromInput").value;
         const dateToInput = document.getElementById("dateToInput").value;
 
-        if (chosenCityName !== "" && dateFromInput !== "" && dateToInput !== ""){
-          const url = `/create-trip?city=${chosenCityName}&dateFrom=${dateFromInput}&dateTo=${dateToInput}`;
+        if (departureCityName !== "" && destinationCityName !== "" && dateFromInput !== "" && dateToInput !== ""){
+          const url = `/create-trip?departureCity=${departureCityName}&destinationCity=${destinationCityName}&dateFrom=${dateFromInput}&dateTo=${dateToInput}`;
 
           window.location.href = url;
         }

@@ -14,6 +14,7 @@ wtforms = "^3.1.2"
 flask-bcrypt = "^1.0.1"
 flask-wtf = "^1.2.1"
 requests = "^2.31.0"
+airportsdata = "^20240207"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
