@@ -12,7 +12,11 @@ def searchForTrips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, c
   "return_from": returnFrom, "return_to": returnFrom, "fly_to": cityTo, "curr": curr, "limit": 5}
 
   response = requests.get(baseUrl, headers=headers, params=parameters)
-  data = response.json()["data"]
+  data = response.json()
+  if "data" in data:
+    data = data["data"]
+  else:
+    return None
 
   result = []
   
@@ -26,6 +30,7 @@ def searchForTrips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, c
     temp["price"] = flight["price"]
     temp["local_departure"] = flight["local_departure"]
     temp["local_arrival"] = flight["local_arrival"]
+    temp["curr"] = curr
     
     if "id" in flight and "booking_token" in flight:
         bookingLink = f"https://www.kiwi.com/uk/booking?flightsId={flight['id']}&token={flight['booking_token']}"
@@ -33,4 +38,3 @@ def searchForTrips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, c
     result.append(temp)
 
   return result
-

@@ -53,9 +53,13 @@
             <h5 id="destinationAirportPar" style="display: none;">Destination Airport: <b><span id="destinationAirportNameSpan"></span> (<span id="destinationAirportCodeSpan"></span>)</b></h5>
           </div>
 
+          <h4 id="availableTickets" class="text-center pt-2" style="display: none; color: green;">Available Tickets</h4>
           <div class="container pt-3" id="ticketsContainer" style="display: none;">
-            <ul id="ticketsList">
-            </ul>
+          </div>
+          <div class="container d-flex  
+            align-items-center  
+            justify-content-center">
+            <button id="ticketsResetBtn" class="btn-lg btn-primary mt-3" type="button" onclick="resetTickets()" style="display: none;">Choose different airports</button>
           </div>
         </div>
         
@@ -69,23 +73,28 @@
         let airportPar;
         let airportNameSpan;
         let chooseAirportHeader;
+        let container;
         
-        if (eventId === "depart"){
+        if (eventId === "depart") {
           ticketsList = document.getElementById("departureTicketsList");
           airportPar = document.getElementById("departureAirportPar");
+          
           airportNameSpan = document.getElementById("departureAirportNameSpan");
-           airportCodeSpan = document.getElementById("departureAirportCodeSpan");
+          airportCodeSpan = document.getElementById("departureAirportCodeSpan");
+          
           document.getElementById("destinationTickets").style.display = "block";
           chooseAirportHeader = document.getElementById("departAirportHeader");
+          container = document.getElementById("departureTickets");
         }
         else {
           ticketsList = document.getElementById("destinationTicketsList");
           airportPar = document.getElementById("destinationAirportPar");
           airportNameSpan = document.getElementById("destinationAirportNameSpan");
-           airportCodeSpan = document.getElementById("destinationAirportCodeSpan");
+          airportCodeSpan = document.getElementById("destinationAirportCodeSpan");
           chooseAirportHeader = document.getElementById("destAirportHeader");
+          container = document.getElementById("destinationTickets");
         }
-        console.log({{ trip_data['date_from'] }});
+      
         airportNameSpan.textContent = airportName;
         airportCodeSpan.textContent = airportCode;
         ticketsList.style.display = "none";
@@ -110,6 +119,27 @@
 
           return formattedDate;
       }
+      function resetTickets() {
+        const ticketsContainer = document.getElementById("ticketsContainer");
+        
+        document.getElementById("availableTickets").style.display = "none";
+        destinationAirportPar
+        document.getElementById("departureAirportPar").style.display = "none";
+        document.getElementById("destinationAirportPar").style.display = "none";
+        
+        document.getElementById("departAirportHeader").style.display = "block";
+        document.getElementById("destAirportHeader").style.display = "block";
+        
+        document.getElementById("departureTicketsList").style.display = "block";
+        document.getElementById("destinationTicketsList").style.display = "block";
+
+        document.getElementById("ticketsResetBtn").style.display = "none";
+        document.getElementById("destinationTickets").style.display = "none";
+      
+        
+        ticketsContainer.innerHTML = "";
+      
+      }
       
       function fetchTickets() {
         const airportFrom = document.getElementById("departureAirportCodeSpan").textContent;
@@ -127,7 +157,7 @@
               dateFrom: dateFrom,
               dateTo: dateTo,
               cityTo: airportTo,
-              curr: 'USD'
+              curr: 'UAH'
           })
         })
         .then(response => response.json())
@@ -138,31 +168,53 @@
       }
 
       function displayTickets(data) {
-        const ticketsList = document.getElementById("ticketsList");
-
-        ticketsList.innerHTML = "";
-
-        if (data.length > 0) {
+        const ticketsContainer = document.getElementById("ticketsContainer");
+        
+        
+        if (data !== null && data.length > 0) {
           data.forEach(ticket => {
-            const li = document.createElement("li");
+            const div = document.createElement("div");
+            const dateMmDd = ticket.local_departure.split("T")[0].split("-");
+            let dateDdMm = dateMmDd[2] + "/" + dateMmDd[1];
+            
+            const departureHour = ticket.local_departure.split("T")[1].split(".")[0];
+            const arrivalHour = ticket.local_arrival.split("T")[1].split(".")[0];
+            
+            div.innerHTML = `
+                  <div class="border row container">
+                    <h5 class="pt-2">
+                      ${dateDdMm}
+                    </h5>
+                    <div class="col-6 text-center">
+                      <h4>${ticket.cityFrom} ${ticket.airportFrom}</h4>
+                      <p><strong>Departure:</strong> ${departureHour}</p>
+                      <hr>
+                      <p><strong>Price:</strong> ${ticket.price} ${ticket.curr}</p>
+                      
+                    </div>
+                    <div class="col-6 text-center pb-3">
+                      <h4>${ticket.cityTo} ${ticket.airportTo}</h4>
+                      <p><strong>Arrival:</strong> ${arrivalHour}</p>
+                      <hr>
+                      <a href="${ticket.bookingLink}" target="_blank"><button class="btn-primary btn-lg" type="button">Buy Now</button></a>
 
-            li.innerHTML = `
-                  <div class="border-">
-                      <p><strong>From:</strong> ${ticket.cityFrom}</p>
-                      <p><strong>To:</strong> ${ticket.cityTo}</p>
-                      <p><strong>Airport From:</strong> ${ticket.airportFrom}</p>
-                      <p><strong>Airport To:</strong> ${ticket.airportTo}</p>
-                      <p><strong>Price:</strong> ${ticket.price}</p>
-                      <p><strong>Departure:</strong> ${ticket.local_departure}</p>
-                      <p><strong>Arrival:</strong> ${ticket.local_arrival}</p>
-                      <p><strong>Booking Link:</strong> <a href="${ticket.bookingLink}" target="_blank">Book Now</a></p>
+                    </div>
                   </div>
               `;
-            ticketsList.appendChild(li);
+            ticketsContainer.appendChild(div);
           });
         }
-        document.getElementById("ticketsContainer").style.display = "block";
-      }
+        else {
+          const p = document.createElement("p");
+          p.textContent = "No tickets found for the selected airports and dates";
+          p.style.color = "grey";
+          p.classList.add("text-center");
+          p.classList.add("lead");
+          ticketsContainer.appendChild(p);
+        }
+        document.getElementById("availableTickets").style.display = "block";
+        ticketsContainer.style.display = "block";
+        document.getElementById("ticketsResetBtn").style.display = "block";      }
     </script>
     
   </body>

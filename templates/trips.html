@@ -57,7 +57,7 @@
                   align-items-center  
                   justify-content-center"><p class="lead text-center"><b>{{ trip['city_from_name'] }} ⇄ {{ trip['city_to_name'] }}</b></p></div>
 
-                {% set datetime = trip['date_to'] %}
+                {% set datetime = trip['date_from'] %}
                 {% set month_name = datetime.strftime('%b') %}
                 {% set day = datetime.strftime('%d') %}
                 {% set year = datetime.strftime('%Y') %}
@@ -69,7 +69,7 @@
                   </div>
 
                   
-                {% set datetime = trip['date_from'] %}
+                {% set datetime = trip['date_to'] %}
                 {% set month_name = datetime.strftime('%b') %}
                 {% set day = datetime.strftime('%d') %}
                 {% set year = datetime.strftime('%Y') %}

@@ -158,6 +158,7 @@ def findPlaneTickets():
   curr = requestData["curr"]
   
   tickets = searchForTrips(cityFrom, cityTo, dateFrom, dateTo, curr)
+
   return jsonify(tickets)
 
 if __name__ == "__main__":
