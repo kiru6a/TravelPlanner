@@ -1,3 +1,39 @@
+"""
+app.py - Flask Application for Trip Management
+
+This Flask application is designed for managing user trips, including user registration, login, trip creation,
+and retrieval of trip details. It utilizes various dependencies for web development, user authentication, and
+external APIs for travel-related information.
+
+Dependencies:
+    - Flask: Web framework for building the application.
+    - Flask-Bcrypt: Used for password hashing.
+    - Flask-Login: Manages user sessions and authentication.
+    - database.py: Module containing database-related functions.
+    - places_api.py: Module for interacting with a places API for city predictions and sights.
+    - kiwi_api.py: Module for interacting with the Kiwi API for flight search.
+
+Routes:
+    - "/" (home): Renders the home page.
+    - "/trips": Placeholder route for future functionality related to trips.
+    - "/signup": Allows users to register for the application.
+    - "/login": Handles user login and redirects to the user's trips.
+    - "/logout": Logs the user out and redirects to the home page.
+    - "/trips/<int:userId>": Renders the trips page for a specific user.
+    - "/trip/<int:tripId>": Renders detailed information about a specific trip.
+    - "/get_city_predictions": Retrieves city predictions based on user input.
+    - "/create-trip": Creates a new trip based on user input.
+    - "/find_plane_tickets": Finds plane tickets using the Kiwi API.
+
+Note: Ensure that the necessary dependencies are installed and the database is properly set up before running the application.
+
+Usage:
+    - Run the application using `python app.py`.
+    - Access the application through a web browser at http://127.0.0.1:5000/ by default.
+    - Follow the provided routes to register, log in, create trips, and explore trip details.
+
+Author: Kyrylo Vorobiov
+"""
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername,\
 fetchUserById, fetchTripsDataByUserId, insertTripIntoDb, fetchTripAndCityDataByTripId, fetchAirportsByCityId
@@ -21,9 +57,21 @@ def home():
 def trips():
   return "trips"
 
-
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+  """
+  Handles user registration.
+
+  This function renders the signup page, processes form submissions, and inserts user data
+  into the database upon successful registration.
+
+  Returns:
+      If the form submission is successful, the function redirects to the login page.
+      Otherwise, it renders the signup page with error messages.
+
+  Note:
+      This function relies on the SignupForm class from the database module.
+  """
   if current_user.is_authenticated:
     return redirect(url_for("logout"))
   form = SignupForm()
@@ -40,9 +88,28 @@ def signup():
     print(form.errors)
   return render_template("signup.html", form=form)
 
+
 @app.route("/trips/<int:userId>")
 @login_required
 def tripsForUser(userId):
+  """
+  Renders the trips page for a specific user.
+
+  This route function retrieves trip records for the specified user from the database
+  and transforms them into a list of dictionaries for rendering in the template.
+
+  Parameters:
+      userId (int): The user ID for whom the trips are to be displayed.
+
+  Returns:
+      If the current user is not authenticated or is not the specified user, the function
+      redirects to the logout page. Otherwise, it renders the trips.html template with the
+      list of dictionaries containing trip details.
+
+  Note:
+      - This function relies on the fetchTripsDataByUserId function from the database module.
+      - The trips.html template is used for rendering the page.
+  """
   if current_user.id != userId:
     return redirect(url_for("logout"))
     
@@ -64,6 +131,25 @@ def tripsForUser(userId):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+  """
+  Handles user login.
+
+  This route function renders the login page, processes form submissions, and logs in the user
+  if the provided credentials are valid. Upon successful login, the user is redirected to their
+  trips page.
+
+  Returns:
+      If the user is already authenticated, redirects to the user's trips page.
+      If the form submission is successful, logs in the user and redirects to their trips page.
+      Otherwise, renders the login page with error messages.
+
+  Note:
+      - This function relies on the LoginForm class from the database module.
+      - The login_user function is used for managing user sessions.
+      - The fetchUserByUsername function is used to retrieve user records from the database.
+      - The check_password_hash function is used for password validation.
+      - The tripsForUser route is redirected to upon successful login.
+  """
   if current_user.is_authenticated:
     return redirect(url_for("tripsForUser", userId=current_user.id))
   form = LoginForm()
@@ -81,7 +167,6 @@ def login():
       return redirect(f"trips/{userRecord.user_id}")
     
   return render_template("login.html", form=form)
-
 
 @login_manager.user_loader
 def loadUser(userId):
