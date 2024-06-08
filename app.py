@@ -37,7 +37,7 @@ Author: Kyrylo Vorobiov
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from database import SignupForm, insert_user_into_db, LoginForm, fetch_user_by_username, \
     fetchUserById, fetchTripsDataByUserId, insert_trip_into_db, fetch_trip_and_city_data_by_trip_id, \
-    fetchAirportsByCityId
+    fetch_airports_by_city_id
 from flask_bcrypt import check_password_hash, bcrypt
 from flask_login import UserMixin, login_user, logout_user, LoginManager, login_required, current_user
 from places_api import get_city_predictions, get_city_sights
@@ -206,7 +206,7 @@ def trip(tripId):
 
     sights = get_city_sights(data_dict["to_name"])
 
-    from_airports = fetchAirportsByCityId(data_row.from_id)
+    from_airports = fetch_airports_by_city_id(data_row.from_id)
     from_airports = [{"code": airport[0], "name": airport[1]} for airport in from_airports]
 
     to_airports = fetchAirportsByCityId(data_row.to_id)
