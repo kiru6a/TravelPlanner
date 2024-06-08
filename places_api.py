@@ -2,13 +2,13 @@ import requests
 import os
 
 
-def getCityPredictions(searchQuery):
-    baseUrl = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+def get_city_predictions(search_query):
+    base_url = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
 
-    apiKey = os.environ['PLACES_ACCESS_KEY']
-    params = {"key": apiKey, "input": searchQuery, "types": "(cities)"}
+    api_key = os.environ['PLACES_ACCESS_KEY']
+    params = {"key": api_key, "input": search_query, "types": "(cities)"}
 
-    response = requests.get(baseUrl, params=params)
+    response = requests.get(base_url, params=params)
     data = response.json()
 
     if data:
@@ -18,14 +18,14 @@ def getCityPredictions(searchQuery):
         return None
 
 
-def getCitySights(cityName: str):
-    baseUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
+def get_city_sights(cityName: str):
+    base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
 
-    apiKey = os.environ["PLACES_ACCESS_KEY"]
+    api_key = os.environ["PLACES_ACCESS_KEY"]
     query = "city attractions in " + cityName
     limit = 5
 
-    url = baseUrl + f"query={query}&key={apiKey}&limit={limit}"
+    url = base_url + f"query={query}&key={api_key}&limit={limit}"
     response = requests.get(url)
     data = response.json()
     result = []
@@ -34,16 +34,17 @@ def getCitySights(cityName: str):
         for place in data["results"]:
             temp = {"name": place["name"]}
 
-            placeId = place["place_id"]
-            mapsLink = f"https://www.google.com/maps/place/?q=place_id:{placeId}"
-            temp["mapsLink"] = mapsLink
+            place_id = place["place_id"]
+            maps_link = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
+            temp["mapsLink"] = maps_link
 
             address = place['formatted_address']
             temp["address"] = address
-            photoReference = place['photos'][0]['photo_reference']
+            photo_reference = place['photos'][0]['photo_reference']
 
-            imageUrl = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={photoReference}&key={apiKey}'
-            temp["imageUrl"] = imageUrl
+            image_url = (f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={photo_reference}'
+                        f'&key={api_key}')
+            temp["imageUrl"] = image_url
 
             result.append(temp)
             if len(result) == 5:

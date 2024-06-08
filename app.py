@@ -35,12 +35,13 @@ Usage:
 Author: Kyrylo Vorobiov
 """
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
-from database import SignupForm, insertUserIntoDb, LoginForm, fetchUserByUsername, \
-    fetchUserById, fetchTripsDataByUserId, insertTripIntoDb, fetchTripAndCityDataByTripId, fetchAirportsByCityId
+from database import SignupForm, insert_user_into_db, LoginForm, fetch_user_by_username, \
+    fetchUserById, fetchTripsDataByUserId, insert_trip_into_db, fetch_trip_and_city_data_by_trip_id, \
+    fetchAirportsByCityId
 from flask_bcrypt import check_password_hash, bcrypt
 from flask_login import UserMixin, login_user, logout_user, LoginManager, login_required, current_user
-from places_api import getCityPredictions, getCitySights
-from kiwi_api import searchForTrips
+from places_api import get_city_predictions, get_city_sights
+from kiwi_api import search_for_trips
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'development_mock_secret_key'
@@ -49,8 +50,8 @@ login_manager = LoginManager(app)
 
 @app.route("/")
 def home():
-    isAuthenticated = current_user.is_authenticated
-    return render_template("home.html", isAuthenticated=isAuthenticated)
+    is_authenticated = current_user.is_authenticated
+    return render_template("home.html", isAuthenticated=is_authenticated)
 
 
 @app.route("/trips")
@@ -77,13 +78,13 @@ def signup():
         return redirect(url_for("logout"))
     form = SignupForm()
     if form.validate_on_submit():
-        plainPassword = form.password.data
-        pwhash = bcrypt.hashpw(plainPassword.encode('utf8'), bcrypt.gensalt())
+        plain_password = form.password.data
+        pwhash = bcrypt.hashpw(plain_password.encode('utf8'), bcrypt.gensalt())
 
-        hashedPassword = pwhash.decode()
+        hashed_password = pwhash.decode()
 
-        insertedId = insertUserIntoDb(form.username.data, hashedPassword)
-        flash(f"User successfully registered with ID: {insertedId}", "success")
+        inserted_id = insert_user_into_db(form.username.data, hashed_password)
+        flash(f"User successfully registered with", "success")
         return redirect("login")
     else:
         print(form.errors)
@@ -92,7 +93,7 @@ def signup():
 
 @app.route("/trips/<int:userId>")
 @login_required
-def tripsForUser(userId):
+def trips_for_user(user_id):
     """
   Renders the trips page for a specific user.
 
@@ -100,7 +101,7 @@ def tripsForUser(userId):
   and transforms them into a list of dictionaries for rendering in the template.
 
   Parameters:
-      userId (int): The user ID for whom the trips are to be displayed.
+      user_id (int): The user ID for whom the trips are to be displayed.
 
   Returns:
       If the current user is not authenticated or is not the specified user, the function
@@ -111,22 +112,22 @@ def tripsForUser(userId):
       - This function relies on the fetchTripsDataByUserId function from the database module.
       - The trips.html template is used for rendering the page.
   """
-    if current_user.id != userId:
+    if current_user.id != user_id:
         return redirect(url_for("logout"))
 
-    tripsRecords = fetchTripsDataByUserId(userId)
-    tripsListOfDicts = []
-    for trip in tripsRecords:
-        tempDict = {"trip_id": trip.trip_id,
-                    "date_from": trip.date_from,
-                    "date_to": trip.date_to,
-                    "city_from_name": trip.from_name,
-                    "city_to_name": trip.to_name,
-                    "city_to_image": trip.city_to_image}
+    trips_records = fetchTripsDataByUserId(user_id)
+    trips_list_of_dicts = []
+    for trip in trips_records:
+        temp_dict = {"trip_id": trip.trip_id,
+                     "date_from": trip.date_from,
+                     "date_to": trip.date_to,
+                     "city_from_name": trip.from_name,
+                     "city_to_name": trip.to_name,
+                     "city_to_image": trip.city_to_image}
 
-        tripsListOfDicts.append(tempDict)
+        trips_list_of_dicts.append(temp_dict)
 
-    return render_template("trips.html", trips=tripsListOfDicts)
+    return render_template("trips.html", trips=trips_list_of_dicts)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -151,32 +152,32 @@ def login():
       - The tripsForUser route is redirected to upon successful login.
   """
     if current_user.is_authenticated:
-        return redirect(url_for("tripsForUser", userId=current_user.id))
+        return redirect(url_for("trips_for_user", userId=current_user.id))
     form = LoginForm()
     if form.validate_on_submit():
-        userRecord = fetchUserByUsername(form.username.data)
-        if userRecord and check_password_hash(userRecord.password, form.password.data):
+        user_record = fetch_user_by_username(form.username.data)
+        if user_record and check_password_hash(user_record.password, form.password.data):
             user = UserMixin()
-            user.id = userRecord.user_id
-            user.username = userRecord.username
-            user.password = userRecord.password
+            user.id = user_record.user_id
+            user.username = user_record.username
+            user.password = user_record.password
 
             login_user(user)
 
-            flash(f"Welcome back, {userRecord.username}", "success")
-            return redirect(f"trips/{userRecord.user_id}")
+            flash(f"Welcome back, {user_record.username}", "success")
+            return redirect(f"trips/{user_record.user_id}")
 
     return render_template("login.html", form=form)
 
 
 @login_manager.user_loader
 def loadUser(userId):
-    userRecord = fetchUserById(userId)
-    if userRecord:
+    user_record = fetchUserById(userId)
+    if user_record:
         user = UserMixin()
-        user.id = userRecord.user_id
-        user.username = userRecord.username
-        user.password = userRecord.password
+        user.id = user_record.user_id
+        user.username = user_record.username
+        user.password = user_record.password
         return user
     return None
 
@@ -196,49 +197,48 @@ def unauthorized():
 
 @app.route("/trip/<int:tripId>")
 def trip(tripId):
-    dataRow = fetchTripAndCityDataByTripId(tripId)
-    dataDict = {}
-    dataDict["date_from"] = dataRow.date_from
-    dataDict["date_to"] = dataRow.date_to
-    dataDict["from_name"] = dataRow.from_name
-    dataDict["to_name"] = dataRow.to_name
-    dataDict["to_image"] = dataRow.to_image
+    data_row = fetch_trip_and_city_data_by_trip_id(tripId)
+    data_dict = {"date_from": data_row.date_from,
+                 "date_to": data_row.date_to,
+                 "from_name": data_row.from_name,
+                 "to_name": data_row.to_name,
+                 "to_image": data_row.to_image}
 
-    sights = getCitySights(dataDict["to_name"])
+    sights = get_city_sights(data_dict["to_name"])
 
-    fromAirports = fetchAirportsByCityId(dataRow.from_id)
-    fromAirports = [{"code": airport[0], "name": airport[1]} for airport in fromAirports]
+    from_airports = fetchAirportsByCityId(data_row.from_id)
+    from_airports = [{"code": airport[0], "name": airport[1]} for airport in from_airports]
 
-    toAirports = fetchAirportsByCityId(dataRow.to_id)
-    toAirports = [{"code": airport[0], "name": airport[1]} for airport in toAirports]
+    to_airports = fetchAirportsByCityId(data_row.to_id)
+    to_airports = [{"code": airport[0], "name": airport[1]} for airport in to_airports]
 
-    return render_template("trip-details.html", trip_data=dataDict, \
-                           sights=sights, fromAirports=fromAirports, \
-                           toAirports=toAirports)
+    return render_template("trip-details.html", trip_data=data_dict,
+                           sights=sights, fromAirports=from_airports,
+                           toAirports=to_airports)
 
 
 @app.route("/get_city_predictions", methods=["POST"])
-def getPredictions():
-    searchQuery = request.form.get("searchQuery")
-    predictions = getCityPredictions(searchQuery=searchQuery)
+def get_predictions():
+    search_query = request.form.get("searchQuery")
+    predictions = get_city_predictions(search_query=search_query)
 
     return jsonify({"predictions": predictions})
 
 
 @app.route("/create-trip")
 def createTrip():
-    departureCity = str(request.args.get("departureCity")).split(",")[0]
-    destinationCity = str(request.args.get("destinationCity")).split(",")[0]
-    dateFrom = str(request.args.get("dateFrom"))
-    dateTo = str(request.args.get("dateTo"))
+    departure_city = str(request.args.get("departureCity")).split(",")[0]
+    destination_city = str(request.args.get("destinationCity")).split(",")[0]
+    date_from = str(request.args.get("dateFrom"))
+    date_to = str(request.args.get("dateTo"))
 
-    insertTripIntoDb(userId=current_user.id, departureCity=departureCity, \
-                     destinationCity=destinationCity, dateFrom=dateFrom, dateTo=dateTo)
-    return redirect(url_for("tripsForUser", userId=current_user.id))
+    insert_trip_into_db(userId=current_user.id, departureCity=departure_city, \
+                        destinationCity=destination_city, dateFrom=date_from, dateTo=date_to)
+    return redirect(url_for("trips_for_user", userId=current_user.id))
 
 
 @app.route("/find_plane_tickets", methods=["POST"])
-def findPlaneTickets():
+def find_plane_tickets():
     requestData = request.get_json()
 
     cityFrom = requestData["cityFrom"]
@@ -247,7 +247,7 @@ def findPlaneTickets():
     dateTo = requestData["dateTo"]
     curr = requestData["curr"]
 
-    tickets = searchForTrips(cityFrom, cityTo, dateFrom, dateTo, curr)
+    tickets = search_for_trips(cityFrom, cityTo, dateFrom, dateTo, curr)
 
     return jsonify(tickets)
 

@@ -2,28 +2,28 @@ import requests
 import os
 
 
-def findCityImage(query: str, maxHeight=3500):
+def find_city_image(query: str, max_height=3500):
     if query is None:
         return None
 
-    apiUrl = "https://api.unsplash.com/search/photos"
-    apiKey = os.environ["UNSPLASH_ACCESS_KEY"]
+    api_url = "https://api.unsplash.com/search/photos"
+    api_key = os.environ["UNSPLASH_ACCESS_KEY"]
 
-    params = {"query": query, "client_id": apiKey}
+    params = {"query": query, "client_id": api_key}
 
     try:
-        result = requests.get(apiUrl, params=params, allow_redirects=True)
+        result = requests.get(api_url, params=params, allow_redirects=True)
         data = result.json()
 
         if not data.get("total"):
             return None
 
-        filteredImages = [image for image in data["results"] if image["height"] <= maxHeight]
+        filtered_images = [image for image in data["results"] if image["height"] <= max_height]
 
-        if not filteredImages:
+        if not filtered_images:
             return None
 
-        return filteredImages[0]["urls"]["raw"]
+        return filtered_images[0]["urls"]["raw"]
 
     except requests.exceptions.RequestException:
         return None

@@ -2,15 +2,15 @@ import requests
 import os
 
 
-def searchForTrips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, curr: str):
-    baseUrl = "https://api.tequila.kiwi.com/v2/search"
-    apiKey = os.environ.get("KIWI_ACCESS_KEY")
+def search_for_trips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, curr: str):
+    base_url = "https://api.tequila.kiwi.com/v2/search"
+    api_key = os.environ.get("KIWI_ACCESS_KEY")
 
-    headers = {"apikey": apiKey}
+    headers = {"apikey": api_key}
     parameters = {"fly_from": cityFrom, "date_from": dateFrom, "date_to": dateFrom,
                   "return_from": returnFrom, "return_to": returnFrom, "fly_to": cityTo, "curr": curr, "limit": 5}
 
-    response = requests.get(baseUrl, headers=headers, params=parameters)
+    response = requests.get(base_url, headers=headers, params=parameters)
     data = response.json()
     if "data" in data:
         data = data["data"]
@@ -30,8 +30,8 @@ def searchForTrips(cityFrom: str, cityTo: str, dateFrom: str, returnFrom: str, c
                 "curr": curr}
 
         if "id" in flight and "booking_token" in flight:
-            bookingLink = f"https://www.kiwi.com/uk/booking?flightsId={flight['id']}&token={flight['booking_token']}"
-            temp["bookingLink"] = bookingLink
+            booking_link = f"https://www.kiwi.com/uk/booking?flightsId={flight['id']}&token={flight['booking_token']}"
+            temp["bookingLink"] = booking_link
         result.append(temp)
 
     return result
