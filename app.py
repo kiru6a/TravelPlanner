@@ -36,7 +36,7 @@ Author: Kyrylo Vorobiov
 """
 from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from database import SignupForm, insert_user_into_db, LoginForm, fetch_user_by_username, \
-    fetchUserById, fetchTripsDataByUserId, insert_trip_into_db, fetch_trip_and_city_data_by_trip_id, \
+    fetch_user_by_id, fetch_trips_data_by_user_id, insert_trip_into_db, fetch_trip_and_city_data_by_trip_id, \
     fetch_airports_by_city_id
 from flask_bcrypt import check_password_hash, bcrypt
 from flask_login import UserMixin, login_user, logout_user, LoginManager, login_required, current_user
@@ -115,7 +115,7 @@ def trips_for_user(user_id):
     if current_user.id != user_id:
         return redirect(url_for("logout"))
 
-    trips_records = fetchTripsDataByUserId(user_id)
+    trips_records = fetch_trips_data_by_user_id(user_id)
     trips_list_of_dicts = []
     for trip in trips_records:
         temp_dict = {"trip_id": trip.trip_id,
@@ -172,7 +172,7 @@ def login():
 
 @login_manager.user_loader
 def loadUser(userId):
-    user_record = fetchUserById(userId)
+    user_record = fetch_user_by_id(userId)
     if user_record:
         user = UserMixin()
         user.id = user_record.user_id

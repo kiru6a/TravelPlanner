@@ -59,16 +59,16 @@ def fetch_user_by_username(username: str):
         return result.fetchone()
 
 
-def fetchUserById(userId: int):
+def fetch_user_by_id(user_id: int):
     with engine.connect() as conn:
         stmt = text("SELECT user_id, username, password "
                     "FROM planner_user "
                     "WHERE user_id = :userId")
-        result = conn.execute(stmt, {"userId": userId})
+        result = conn.execute(stmt, {"userId": user_id})
         return result.fetchone()
 
 
-def fetchTripsDataByUserId(userId: int):
+def fetch_trips_data_by_user_id(user_id: int):
     with engine.connect() as conn:
         stmt = text("SELECT t.trip_id, t.date_from, "
                     "t.date_to, c_from.city_name AS from_name, "
@@ -77,7 +77,7 @@ def fetchTripsDataByUserId(userId: int):
                     "JOIN city c_from ON t.city_from_id = c_from.city_id "
                     "JOIN city c_to ON t.city_to_id = c_to.city_id "
                     "WHERE t.user_id = :userId")
-        result = conn.execute(stmt, {"userId": userId})
+        result = conn.execute(stmt, {"userId": user_id})
         return result.all()
 
 
