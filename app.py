@@ -133,26 +133,26 @@ def trips_for_user(user_id):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
-  Handles user login.
+      Handles user login.
 
-  This route function renders the login page, processes form submissions, and logs in the user
-  if the provided credentials are valid. Upon successful login, the user is redirected to their
-  trips page.
+      This route function renders the login page, processes form submissions, and logs in the user
+      if the provided credentials are valid. Upon successful login, the user is redirected to their
+      trips page.
 
-  Returns:
-      If the user is already authenticated, redirects to the user's trips page.
-      If the form submission is successful, logs in the user and redirects to their trips page.
-      Otherwise, renders the login page with error messages.
+      Returns:
+          If the user is already authenticated, redirects to the user's trips page.
+          If the form submission is successful, logs in the user and redirects to their trips page.
+          Otherwise, renders the login page with error messages.
 
-  Note:
-      - This function relies on the LoginForm class from the database module.
-      - The login_user function is used for managing user sessions.
-      - The fetchUserByUsername function is used to retrieve user records from the database.
-      - The check_password_hash function is used for password validation.
-      - The tripsForUser route is redirected to upon successful login.
-  """
+      Note:
+          - This function relies on the LoginForm class from the database module.
+          - The login_user function is used for managing user sessions.
+          - The fetchUserByUsername function is used to retrieve user records from the database.
+          - The check_password_hash function is used for password validation.
+          - The tripsForUser route is redirected to upon successful login.
+    """
     if current_user.is_authenticated:
-        return redirect(url_for("trips_for_user", user_id=current_user.id))
+        return redirect(url_for("trips_for_user", userId=current_user.id))
     form = LoginForm()
     if form.validate_on_submit():
         user_record = fetch_user_by_username(form.username.data)
