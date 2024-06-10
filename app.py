@@ -241,13 +241,13 @@ def createTrip():
 def find_plane_tickets():
     request_data = request.get_json()
 
-    cityFrom = request_data["cityFrom"]
-    cityTo = request_data["cityTo"]
-    dateFrom = request_data["dateFrom"]
-    dateTo = request_data["dateTo"]
+    city_from = request_data["cityFrom"]
+    city_to = request_data["cityTo"]
+    date_from = request_data["dateFrom"]
+    date_to = request_data["dateTo"]
     curr = request_data["curr"]
 
-    tickets = search_for_trips(cityFrom, cityTo, dateFrom, dateTo, curr)
+    tickets = search_for_trips(city_from, city_to, date_from, date_to, curr)
 
     return jsonify(tickets)
 
