@@ -25,7 +25,8 @@ Routes:
     - "/create-trip": Creates a new trip based on user input.
     - "/find_plane_tickets": Finds plane tickets using the Kiwi API.
 
-Note: Ensure that the necessary dependencies are installed and the database is properly set up before running the application.
+Note: Ensure that the necessary dependencies are installed and the database
+is properly set up before running the application.
 
 Usage:
     - Run the application using `python app.py`.
@@ -152,7 +153,7 @@ def login():
           - The tripsForUser route is redirected to upon successful login.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("trips_for_user", user_id=current_user.id))
+        return redirect(url_for("trips_for_user", userId=current_user.id))
     form = LoginForm()
     if form.validate_on_submit():
         user_record = fetch_user_by_username(form.username.data)
@@ -234,7 +235,7 @@ def createTrip():
 
     insert_trip_into_db(user_id=current_user.id, departure_city=departure_city,
                         destination_city=destination_city, date_from=date_from, date_to=date_to)
-    return redirect(url_for("trips_for_user", user_id=current_user.id))
+    return redirect(url_for("trips_for_user", userId=current_user.id))
 
 
 @app.route("/find_plane_tickets", methods=["POST"])
