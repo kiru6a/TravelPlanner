@@ -81,19 +81,19 @@ def fetch_trips_data_by_user_id(user_id: int):
         return result.all()
 
 
-def insert_city_into_db(cityName: str) -> int:
+def insert_city_into_db(city_name: str) -> int:
     with engine.connect() as conn:
         stmt = text("INSERT INTO city(city_name, city_image_url) "
                     "VALUES (:cityName, :cityImageUrl)")
-        city_image_url = find_city_image(cityName)
+        city_image_url = find_city_image(city_name)
 
         if not city_image_url:
             city_image_url = url_for("static", filename="images/default_city_image.jpeg")
 
-        result = conn.execute(stmt, {"cityName": cityName, "cityImageUrl": city_image_url})
+        result = conn.execute(stmt, {"cityName": city_name, "cityImageUrl": city_image_url})
         conn.commit()
 
-        airports_data_list = get_airports_by_city_name(cityName)
+        airports_data_list = get_airports_by_city_name(city_name)
         city_id = result.lastrowid
 
         stmt = text("INSERT INTO airport(airport_code, airport_name, city_id) "
@@ -105,38 +105,38 @@ def insert_city_into_db(cityName: str) -> int:
         return city_id
 
 
-def fetch_airports_by_city_id(cityId: int):
+def fetch_airports_by_city_id(city_id: int):
     with engine.connect() as conn:
         stmt = text("SELECT airport_code, airport_name "
                     "FROM airport "
                     "WHERE city_id = :cityId")
-        result = conn.execute(stmt, {"cityId": cityId})
+        result = conn.execute(stmt, {"cityId": city_id})
         return result.all()
 
 
-def insert_trip_into_db(userId: int, departureCity: str, destinationCity: str,
-                        dateFrom: str, dateTo: str):
+def insert_trip_into_db(user_id: int, departure_city: str, destination_city: str,
+                        date_from: str, date_to: str):
     with engine.connect() as conn:
         stmt = text("SELECT c.city_id "
                     "FROM city c "
                     "WHERE c.city_name = :cityName")
-        result = conn.execute(stmt, {"cityName": departureCity})
+        result = conn.execute(stmt, {"cityName": departure_city})
         row = result.fetchone()
-        departure_city_id = row.city_id if row else insert_city_into_db(departureCity)
+        departure_city_id = row.city_id if row else insert_city_into_db(departure_city)
 
         stmt = text("SELECT c.city_id "
                     "FROM city c "
                     "WHERE c.city_name = :cityName")
-        result = conn.execute(stmt, {"cityName": destinationCity})
+        result = conn.execute(stmt, {"cityName": destination_city})
         row = result.fetchone()
-        destination_city_id = row.city_id if row else insert_city_into_db(destinationCity)
+        destination_city_id = row.city_id if row else insert_city_into_db(destination_city)
 
         stmt = text("INSERT INTO trips(user_id, city_from_id, city_to_id, date_from, date_to) "
                     "VALUES (:userId, :cityFromId, :cityToId, :dateFrom, :dateTo)")
 
-        params = {"userId": userId, "cityFromId": departure_city_id,
-                  "cityToId": destination_city_id, "dateFrom": dateFrom,
-                  "dateTo": dateTo}
+        params = {"userId": user_id, "cityFromId": departure_city_id,
+                  "cityToId": destination_city_id, "dateFrom": date_from,
+                  "dateTo": date_to}
         result = conn.execute(stmt, params)
         conn.commit()
 

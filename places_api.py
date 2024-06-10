@@ -18,11 +18,11 @@ def get_city_predictions(search_query):
         return None
 
 
-def get_city_sights(cityName: str):
+def get_city_sights(city_name: str):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
 
     api_key = os.environ["PLACES_ACCESS_KEY"]
-    query = "city attractions in " + cityName
+    query = "city attractions in " + city_name
     limit = 5
 
     url = base_url + f"query={query}&key={api_key}&limit={limit}"
@@ -42,8 +42,9 @@ def get_city_sights(cityName: str):
             temp["address"] = address
             photo_reference = place['photos'][0]['photo_reference']
 
-            image_url = (f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={photo_reference}'
-                        f'&key={api_key}')
+            image_url = (
+                f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference={photo_reference}'
+                f'&key={api_key}')
             temp["imageUrl"] = image_url
 
             result.append(temp)

@@ -152,7 +152,7 @@ def login():
       - The tripsForUser route is redirected to upon successful login.
   """
     if current_user.is_authenticated:
-        return redirect(url_for("trips_for_user", userId=current_user.id))
+        return redirect(url_for("trips_for_user", user_id=current_user.id))
     form = LoginForm()
     if form.validate_on_submit():
         user_record = fetch_user_by_username(form.username.data)
@@ -171,7 +171,7 @@ def login():
 
 
 @login_manager.user_loader
-def loadUser(userId):
+def load_user(userId):
     user_record = fetch_user_by_id(userId)
     if user_record:
         user = UserMixin()
@@ -196,8 +196,8 @@ def unauthorized():
 
 
 @app.route("/trip/<int:tripId>")
-def trip(tripId):
-    data_row = fetch_trip_and_city_data_by_trip_id(tripId)
+def trip(trip_id):
+    data_row = fetch_trip_and_city_data_by_trip_id(trip_id)
     data_dict = {"date_from": data_row.date_from,
                  "date_to": data_row.date_to,
                  "from_name": data_row.from_name,
@@ -232,20 +232,20 @@ def createTrip():
     date_from = str(request.args.get("dateFrom"))
     date_to = str(request.args.get("dateTo"))
 
-    insert_trip_into_db(userId=current_user.id, departureCity=departure_city, \
-                        destinationCity=destination_city, dateFrom=date_from, dateTo=date_to)
-    return redirect(url_for("trips_for_user", userId=current_user.id))
+    insert_trip_into_db(user_id=current_user.id, departure_city=departure_city,
+                        destination_city=destination_city, date_from=date_from, date_to=date_to)
+    return redirect(url_for("trips_for_user", user_id=current_user.id))
 
 
 @app.route("/find_plane_tickets", methods=["POST"])
 def find_plane_tickets():
-    requestData = request.get_json()
+    request_data = request.get_json()
 
-    cityFrom = requestData["cityFrom"]
-    cityTo = requestData["cityTo"]
-    dateFrom = requestData["dateFrom"]
-    dateTo = requestData["dateTo"]
-    curr = requestData["curr"]
+    cityFrom = request_data["cityFrom"]
+    cityTo = request_data["cityTo"]
+    dateFrom = request_data["dateFrom"]
+    dateTo = request_data["dateTo"]
+    curr = request_data["curr"]
 
     tickets = search_for_trips(cityFrom, cityTo, dateFrom, dateTo, curr)
 

@@ -94,7 +94,7 @@
           chooseAirportHeader = document.getElementById("destAirportHeader");
           container = document.getElementById("destinationTickets");
         }
-      
+
         airportNameSpan.textContent = airportName;
         airportCodeSpan.textContent = airportCode;
         ticketsList.style.display = "none";
@@ -108,22 +108,19 @@
 
       function formatDate(date) {
           // Pad the month and day with leading zeros
-          var formattedMonth = ('0' + (date.getMonth() + 1)).slice(-2);
-          var formattedDay = ('0' + date.getDate()).slice(-2);
+          const formattedMonth = ('0' + (date.getMonth() + 1)).slice(-2);
+          const formattedDay = ('0' + date.getDate()).slice(-2);
 
           // Get the year in yyyy format
-          var formattedYear = date.getFullYear();
+          const formattedYear = date.getFullYear();
 
           // Construct the formatted date string
-          var formattedDate = formattedDay + '/' + formattedMonth + '/' + formattedYear;
-
-          return formattedDate;
+          return formattedDay + '/' + formattedMonth + '/' + formattedYear;
       }
       function resetTickets() {
         const ticketsContainer = document.getElementById("ticketsContainer");
         
         document.getElementById("availableTickets").style.display = "none";
-        destinationAirportPar
         document.getElementById("departureAirportPar").style.display = "none";
         document.getElementById("destinationAirportPar").style.display = "none";
         
