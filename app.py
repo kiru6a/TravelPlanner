@@ -210,7 +210,7 @@ def trip(tripId):
     from_airports = fetch_airports_by_city_id(data_row.from_id)
     from_airports = [{"code": airport[0], "name": airport[1]} for airport in from_airports]
 
-    to_airports = fetchAirportsByCityId(data_row.to_id)
+    to_airports = fetch_airports_by_city_id(data_row.to_id)
     to_airports = [{"code": airport[0], "name": airport[1]} for airport in to_airports]
 
     return render_template("trip-details.html", trip_data=data_dict,
