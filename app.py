@@ -93,7 +93,7 @@ def signup():
 
 @app.route("/trips/<int:userId>")
 @login_required
-def trips_for_user(user_id):
+def trips_for_user(userId):
     """
   Renders the trips page for a specific user.
 
@@ -101,7 +101,7 @@ def trips_for_user(user_id):
   and transforms them into a list of dictionaries for rendering in the template.
 
   Parameters:
-      user_id (int): The user ID for whom the trips are to be displayed.
+      userId (int): The user ID for whom the trips are to be displayed.
 
   Returns:
       If the current user is not authenticated or is not the specified user, the function
@@ -112,10 +112,10 @@ def trips_for_user(user_id):
       - This function relies on the fetchTripsDataByUserId function from the database module.
       - The trips.html template is used for rendering the page.
   """
-    if current_user.id != user_id:
+    if current_user.id != userId:
         return redirect(url_for("logout"))
 
-    trips_records = fetch_trips_data_by_user_id(user_id)
+    trips_records = fetch_trips_data_by_user_id(userId)
     trips_list_of_dicts = []
     for trip in trips_records:
         temp_dict = {"trip_id": trip.trip_id,
@@ -152,7 +152,7 @@ def login():
           - The tripsForUser route is redirected to upon successful login.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("trips_for_user", userId=current_user.id))
+        return redirect(url_for("trips_for_user", user_id=current_user.id))
     form = LoginForm()
     if form.validate_on_submit():
         user_record = fetch_user_by_username(form.username.data)
@@ -196,8 +196,8 @@ def unauthorized():
 
 
 @app.route("/trip/<int:tripId>")
-def trip(trip_id):
-    data_row = fetch_trip_and_city_data_by_trip_id(trip_id)
+def trip(tripId):
+    data_row = fetch_trip_and_city_data_by_trip_id(tripId)
     data_dict = {"date_from": data_row.date_from,
                  "date_to": data_row.date_to,
                  "from_name": data_row.from_name,
